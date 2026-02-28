@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 30% 97%;
+    --foreground: 270 20% 15%;
+
+    --card: 40 25% 95%;
+    --card-foreground: 270 20% 15%;
+
+    --popover: 40 30% 97%;
+    --popover-foreground: 270 20% 15%;
+
+    --primary: 270 40% 30%;
+    --primary-foreground: 40 30% 97%;
+
+    --secondary: 40 35% 90%;
+    --secondary-foreground: 270 20% 15%;
+
+    --muted: 40 20% 92%;
+    --muted-foreground: 270 10% 45%;
+
+    --accent: 43 80% 50%;
+    --accent-foreground: 270 20% 12%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 20% 88%;
+    --input: 40 20% 88%;
+    --ring: 270 40% 30%;
+
+    --radius: 0.75rem;
+
+    /* Liturgical colors */
+    --liturgical-green: 145 45% 35%;
+    --liturgical-purple: 270 40% 30%;
+    --liturgical-white: 40 30% 97%;
+    --liturgical-red: 0 72% 45%;
+    --liturgical-rose: 340 50% 60%;
+    --liturgical-gold: 43 80% 50%;
+
+    /* Custom */
+    --gold: 43 80% 50%;
+    --gold-light: 43 60% 75%;
+    --gold-dark: 43 80% 38%;
+    --ivory: 40 30% 97%;
+    --warm-gray: 30 10% 60%;
+
+    --sidebar-background: 270 30% 18%;
+    --sidebar-foreground: 40 30% 95%;
+    --sidebar-primary: 43 80% 50%;
+    --sidebar-primary-foreground: 270 20% 12%;
+    --sidebar-accent: 270 25% 25%;
+    --sidebar-accent-foreground: 40 30% 95%;
+    --sidebar-border: 270 20% 25%;
+    --sidebar-ring: 43 80% 50%;
+  }
+
+  .dark {
+    --background: 270 25% 8%;
+    --foreground: 40 20% 92%;
+
+    --card: 270 22% 12%;
+    --card-foreground: 40 20% 92%;
+
+    --popover: 270 22% 12%;
+    --popover-foreground: 40 20% 92%;
+
+    --primary: 43 80% 50%;
+    --primary-foreground: 270 25% 8%;
+
+    --secondary: 270 18% 18%;
+    --secondary-foreground: 40 20% 92%;
+
+    --muted: 270 15% 18%;
+    --muted-foreground: 40 10% 55%;
+
+    --accent: 43 70% 45%;
+    --accent-foreground: 270 25% 8%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 40 20% 92%;
+
+    --border: 270 15% 20%;
+    --input: 270 15% 20%;
+    --ring: 43 80% 50%;
+
+    --sidebar-background: 270 25% 6%;
+    --sidebar-foreground: 40 20% 92%;
+    --sidebar-primary: 43 80% 50%;
+    --sidebar-primary-foreground: 270 25% 8%;
+    --sidebar-accent: 270 20% 15%;
+    --sidebar-accent-foreground: 40 20% 92%;
+    --sidebar-border: 270 15% 15%;
+    --sidebar-ring: 43 80% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  .liturgical-green { background-color: hsl(var(--liturgical-green)); }
+  .liturgical-purple { background-color: hsl(var(--liturgical-purple)); }
+  .liturgical-white { background-color: hsl(var(--liturgical-white)); }
+  .liturgical-red { background-color: hsl(var(--liturgical-red)); }
+  .liturgical-rose { background-color: hsl(var(--liturgical-rose)); }
+  .liturgical-gold { background-color: hsl(var(--liturgical-gold)); }
+
+  .text-liturgical-green { color: hsl(var(--liturgical-green)); }
+  .text-liturgical-purple { color: hsl(var(--liturgical-purple)); }
+  .text-liturgical-red { color: hsl(var(--liturgical-red)); }
+  .text-liturgical-gold { color: hsl(var(--liturgical-gold)); }
+
+  .gradient-gold {
+    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-dark)) 100%);
+  }
+
+  .gradient-liturgical {
+    background: linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(270 35% 22%) 100%);
+  }
+
+  .shadow-gold {
+    box-shadow: 0 4px 20px -4px hsl(var(--gold) / 0.3);
+  }
+
+  .shadow-liturgical {
+    box-shadow: 0 4px 20px -4px hsl(var(--primary) / 0.2);
+  }
+}
