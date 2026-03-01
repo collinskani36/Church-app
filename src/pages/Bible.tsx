@@ -100,34 +100,28 @@ const BibleReader = () => {
   const selectedBookDisplay = ALL[bookIndex];
 
   // ── Load book JSON ──
+  // Files must live in public/bible/kjv/ and public/bible/swahili/
+  // so Vercel serves them as static assets at runtime.
   const loadBook = useCallback(async (idx: number, sw: boolean) => {
     setLoading(true);
     setError(null);
     try {
-      let data: BibleBook | null = null;
+      const fileName = sw
+        ? toFileName(ALL_BOOKS_SW[idx])
+        : toFileName(ALL_BOOKS_EN[idx]);
+      const folder = sw ? "swahili" : "kjv";
+      const url = `/bible/${folder}/${fileName}.json`;
 
-      if (sw) {
-        const fileName = toFileName(ALL_BOOKS_SW[idx]);
-        const mod = await import(`../bible/swahili/${fileName}.json`);
-        data = mod.default as BibleBook;
-      } else {
-        const fileName = toFileName(ALL_BOOKS_EN[idx]);
-        try {
-          const mod = await import(`../bible/kjv/${fileName}.json`);
-          data = mod.default as BibleBook;
-        } catch {
-          const mod = await import(`../bible/${fileName}.json`);
-          data = mod.default as BibleBook;
-        }
-      }
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: BibleBook = await res.json();
 
-      if (!data) throw new Error("not found");
       setBookData(data);
     } catch {
       setError(
         sw
-          ? `Haikuweza kupakia "${ALL_BOOKS_SW[idx]}". Hakikisha convert-swahili.cjs ilifanya kazi.`
-          : `Could not load "${ALL_BOOKS_EN[idx]}". Check src/bible/kjv/ has the file.`
+          ? `Haikuweza kupakia "${ALL_BOOKS_SW[idx]}". Hakikisha faili zipo katika public/bible/swahili/.`
+          : `Could not load "${ALL_BOOKS_EN[idx]}". Check public/bible/kjv/ has the file.`
       );
     } finally {
       setLoading(false);
