@@ -13,10 +13,10 @@ const AppHeader = () => {
           </div>
           <div>
             <h1 className="text-sm font-display font-semibold leading-tight text-foreground">
-              {t("St. Gregory Parish", "Parokia ya Mt. Yosefu")}
+              {t("St. Gregory Parish", "Parokia ya Mt. Gregori")}
             </h1>
             <p className="text-[10px] text-muted-foreground">
-              {t("Nairobi, Kenya", "Nairobi, Kenya")}
+              {t("Eldoret, Kenya", "Eldoret, Kenya")}
             </p>
           </div>
         </div>
