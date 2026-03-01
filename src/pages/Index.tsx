@@ -198,7 +198,7 @@ const Home = () => {
             className="text-2xl font-display font-bold text-foreground cursor-pointer select-none"
             onClick={handleChurchNameTap}
           >
-            {t("St. Gregory Catholic Church", "Parokia ya Katoliki ya Mt. Yosefu")}
+            {t("St. Gregory Catholic Church", "Parokia ya Katoliki ya Mt. Gregori")}
           </h2>
         </div>
       </div>
