@@ -128,7 +128,7 @@ const Home = () => {
   };
 
   const quickLinks = [
-    { icon: BookOpen,   label: t("Daily Readings", "Masomo ya Leo"),       path: "/readings",      color: "text-liturgical-green"  },
+    { icon: BookOpen,   label: t("Sunday reading", "Masomo ya Leo"),       path: "/readings",      color: "text-liturgical-green"  },
     { icon: BookMarked, label: t("Bible", "Biblia"),                        path: "/bible",         color: "text-liturgical-purple" },
     { icon: Music,      label: t("Hymns", "Nyimbo"),                        path: "/hymns",         color: "text-liturgical-purple" },
     { icon: Heart,      label: t("Prayers", "Sala"),                        path: "/prayers",       color: "text-liturgical-red"    },

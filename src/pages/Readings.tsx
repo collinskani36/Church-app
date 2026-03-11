@@ -117,7 +117,7 @@ const Readings = () => {
         <div className="flex items-center gap-3 mb-4">
           <Calendar className="h-5 w-5 text-accent" />
           <h2 className="font-display text-xl font-bold text-foreground">
-            {t("Daily Mass Readings", "Masomo ya Misa ya Leo")}
+            {t("Sunday Mass Reading", "Masomo ya Misa ya Leo")}
           </h2>
         </div>
         <div className="text-center py-12">
@@ -138,7 +138,7 @@ const Readings = () => {
         <div className="flex items-center gap-3 mb-4">
           <Calendar className="h-5 w-5 text-accent" />
           <h2 className="font-display text-xl font-bold text-foreground">
-            {t("Daily Mass Readings", "Masomo ya Misa ya Leo")}
+            {t("Sunday Mass Reading", "Masomo ya Misa ya Leo")}
           </h2>
         </div>
 
@@ -178,7 +178,7 @@ const Readings = () => {
         <div className="flex items-center gap-3">
           <Calendar className="h-5 w-5 text-accent" />
           <h2 className="font-display text-xl font-bold text-foreground">
-            {t("Daily Mass Readings", "Masomo ya Misa ya Leo")}
+            {t("Sunday Mass Reading", "Masomo ya Misa ya Leo")}
           </h2>
         </div>
 

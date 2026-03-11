@@ -66,7 +66,7 @@ const ALL_BOOKS_SW = [...OLD_TESTAMENT_SW, ...NEW_TESTAMENT_SW];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const toFileName = (name: string) => name.replace(/\s+/g, "_");
+const toFileName = (name: string) => name.replace(/\s+/g, "");
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
