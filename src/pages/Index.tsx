@@ -13,6 +13,7 @@ interface SubReading {
   type: string;
   typeSw: string;
   reference: string;
+  referenceSw?: string;
 }
 
 interface DailyReading {
@@ -71,25 +72,23 @@ const Home = () => {
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
 
-  // ── Live data from Firestore ──
+  // ── Live data ──
   const [todayReading, setTodayReading] = useState<DailyReading | null>(null);
   const [latestAnnouncement, setLatestAnnouncement] = useState<Announcement | null>(null);
   const [parishInfo, setParishInfo] = useState<ParishInfo | null>(null);
 
-  // Subscribe to readings — pick today's or nearest upcoming
   useEffect(() => {
     const q = query(collection(db, "readings"), orderBy("date", "asc"));
     return onSnapshot(q, (snap) => {
       const all = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as DailyReading[];
-      const today = todayStr();
-      const todayEntry  = all.find((r) => r.date === today);
-      const upcoming    = all.filter((r) => r.date >= today).sort((a, b) => a.date.localeCompare(b.date));
-      const fallback    = [...all].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null;
+      const today     = todayStr();
+      const todayEntry = all.find((r) => r.date === today);
+      const upcoming   = all.filter((r) => r.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+      const fallback   = [...all].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null;
       setTodayReading(todayEntry ?? upcoming[0] ?? fallback);
     });
   }, []);
 
-  // Subscribe to latest announcement
   useEffect(() => {
     const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
     return onSnapshot(q, (snap) => {
@@ -98,14 +97,13 @@ const Home = () => {
     });
   }, []);
 
-  // Subscribe to parish info for mass times
   useEffect(() => {
     return onSnapshot(doc(db, "parish", "info"), (snap) => {
       if (snap.exists()) setParishInfo(snap.data() as ParishInfo);
     });
   }, []);
 
-  // ── Admin login ──
+  // ── Admin tap ──
   const handleChurchNameTap = () => {
     tapCount.current += 1;
     if (tapTimer.current) clearTimeout(tapTimer.current);
@@ -128,25 +126,24 @@ const Home = () => {
   };
 
   const quickLinks = [
-    { icon: BookOpen,   label: t("Sunday reading", "Masomo ya Leo"),       path: "/readings",      color: "text-liturgical-green"  },
-    { icon: BookMarked, label: t("Bible", "Biblia"),                        path: "/bible",         color: "text-liturgical-purple" },
-    { icon: Music,      label: t("Hymns", "Nyimbo"),                        path: "/hymns",         color: "text-liturgical-purple" },
-    { icon: Heart,      label: t("Prayers", "Sala"),                        path: "/prayers",       color: "text-liturgical-red"    },
-    { icon: Megaphone,  label: t("Announcements", "Matangazo"),             path: "/announcements", color: "text-accent"            },
-    { icon: Church,     label: t("Parish Info", "Taarifa za Parokia"),      path: "/parish",        color: "text-accent"            },
+    { icon: BookOpen,   label: t("Sunday reading", "Masomo ya Leo"),  path: "/readings",      color: "text-liturgical-green"  },
+    { icon: BookMarked, label: t("Bible", "Biblia"),                   path: "/bible",         color: "text-liturgical-purple" },
+    { icon: Music,      label: t("Hymns", "Nyimbo"),                   path: "/hymns",         color: "text-liturgical-purple" },
+    { icon: Heart,      label: t("Prayers", "Sala"),                   path: "/prayers",       color: "text-liturgical-red"    },
+    { icon: Megaphone,  label: t("Announcements", "Matangazo"),        path: "/announcements", color: "text-accent"            },
+    { icon: Church,     label: t("Parish Info", "Taarifa za Parokia"), path: "/parish",        color: "text-accent"            },
   ];
 
-  // Mass schedule — from live parish info or sensible defaults
   const massSchedule = parishInfo
     ? [
-        { day: t("Sunday", "Jumapili"),         times: parseTimes(parishInfo.massSunday) },
-        { day: t("Weekdays", "Siku za Juma"),   times: parseTimes(parishInfo.massWeekday) },
-        { day: t("Saturday", "Jumamosi"),       times: parseTimes(parishInfo.massSaturday) },
+        { day: t("Sunday", "Jumapili"),       times: parseTimes(parishInfo.massSunday) },
+        { day: t("Weekdays", "Siku za Juma"), times: parseTimes(parishInfo.massWeekday) },
+        { day: t("Saturday", "Jumamosi"),     times: parseTimes(parishInfo.massSaturday) },
       ]
     : [
-        { day: t("Sunday", "Jumapili"),         times: ["7:00 AM", "9:00 AM", "11:00 AM (Kiswahili)", "5:00 PM"] },
-        { day: t("Weekdays", "Siku za Juma"),   times: ["6:30 AM", "12:10 PM", "5:30 PM"] },
-        { day: t("Saturday", "Jumamosi"),       times: ["7:00 AM", "5:30 PM (Vigil)"] },
+        { day: t("Sunday", "Jumapili"),       times: ["7:00 AM", "9:00 AM", "11:00 AM (Kiswahili)", "5:00 PM"] },
+        { day: t("Weekdays", "Siku za Juma"), times: ["6:30 AM", "12:10 PM", "5:30 PM"] },
+        { day: t("Saturday", "Jumamosi"),     times: ["7:00 AM", "5:30 PM (Vigil)"] },
       ];
 
   const announcementTitle = latestAnnouncement
@@ -173,9 +170,11 @@ const Home = () => {
             </button>
             <h3 className="font-display text-lg font-bold text-foreground mb-1">Admin Login</h3>
             <p className="text-xs text-muted-foreground mb-4">Parish administrator access only</p>
-            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
+            <input type="email" placeholder="Email" value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-ring" />
-            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
+            <input type="password" placeholder="Password" value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-ring" />
             {loginError && <p className="text-xs text-destructive mb-3">{loginError}</p>}
             <button onClick={handleAdminLogin} disabled={loginLoading}
@@ -203,7 +202,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ── Liturgical Season Badge (from live reading) ── */}
+      {/* ── Liturgical Season Badge ── */}
       {todayReading && (
         <div className="px-4 -mt-2 relative z-10">
           <div className="flex items-center gap-2 rounded-lg bg-card p-3 shadow-liturgical border border-border">
@@ -219,7 +218,7 @@ const Home = () => {
         </div>
       )}
 
-      {/* ── Quick Links (3-column grid) ── */}
+      {/* ── Quick Links ── */}
       <div className="grid grid-cols-3 gap-3 px-4 mt-4">
         {quickLinks.slice(0, 6).map((link) => (
           <button key={link.path} onClick={() => navigate(link.path)}
@@ -230,7 +229,7 @@ const Home = () => {
         ))}
       </div>
 
-      {/* ── Latest Announcement banner ── */}
+      {/* ── Latest Announcement ── */}
       {latestAnnouncement && (
         <div className="px-4 mt-5">
           <div className="flex items-center justify-between mb-2">
@@ -274,8 +273,17 @@ const Home = () => {
                 <div key={i} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
                   <div className={`h-2 w-2 rounded-full shrink-0 ${seasonColorMap[todayReading.seasonColor] ?? "bg-secondary"}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground">{t(reading.type, reading.typeSw)}</p>
-                    <p className="text-sm font-medium text-foreground truncate">{reading.reference}</p>
+                    {/* ✅ Type switches language */}
+                    <p className="text-xs text-muted-foreground">
+                      {t(reading.type, reading.typeSw)}
+                    </p>
+                    {/* ✅ Reference switches language — Yohana in SW, John in EN */}
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {t(
+                        reading.reference,
+                        reading.referenceSw?.trim() ? reading.referenceSw : reading.reference
+                      )}
+                    </p>
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                 </div>
@@ -289,7 +297,7 @@ const Home = () => {
         )}
       </div>
 
-      {/* ── Mass Times (live from Church info) ── */}
+      {/* ── Mass Times ── */}
       <div className="px-4 mt-5 mb-8">
         <h3 className="font-display text-base font-semibold text-foreground mb-3">
           {t("Mass Times", "Ratiba za Misa")}
@@ -309,6 +317,7 @@ const Home = () => {
           ))}
         </div>
       </div>
+
     </div>
   );
 };

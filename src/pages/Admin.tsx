@@ -21,6 +21,7 @@ interface SubReading {
   type: string;
   typeSw: string;
   reference: string;
+  referenceSw?: string;
   text: string;
   textSw: string;
 }
@@ -162,7 +163,7 @@ function parseReference(ref: string, lang: "en" | "sw") {
 async function fetchVerses(ref: string, lang: "en" | "sw"): Promise<{ text: string; error?: string }> {
   const parsed = parseReference(ref, lang);
   if (!parsed) {
-    const ex = lang === "sw" ? "Marko 8:1-10" : "Mark 8:1-10";
+    const ex = lang === "sw" ? "Yohana 3:16" : "John 3:16";
     return { text: "", error: `Could not parse "${ref}". Try e.g. "${ex}"` };
   }
   const { file, chapter, startVerse, endVerse } = parsed;
@@ -225,7 +226,10 @@ const categoryConfig: Record<string, { label: string; icon: any; accent: string;
 };
 
 const TABS: Category[] = ["announcements", "readings", "prayers", "hymns", "parish"];
-const emptySubReading = (): SubReading => ({ type: "", typeSw: "", reference: "", text: "", textSw: "" });
+
+const emptySubReading = (): SubReading => ({
+  type: "", typeSw: "", reference: "", referenceSw: "", text: "", textSw: "",
+});
 
 const defaultParish: ParishInfo = {
   name: "St. Gregory Catholic Parish",
@@ -257,7 +261,7 @@ const SubReadingCard = ({ sr, index, total, onChange, onRemove }: {
 }) => {
   const [showSw, setShowSw] = useState(false);
   const [refEn, setRefEn] = useState(sr.reference);
-  const [refSw, setRefSw] = useState(sr.reference);
+  const [refSw, setRefSw] = useState(sr.referenceSw || sr.reference);
   const [loadingEn, setLoadingEn] = useState(false);
   const [loadingSw, setLoadingSw] = useState(false);
   const [errEn, setErrEn] = useState<string | null>(null);
@@ -281,7 +285,8 @@ const SubReadingCard = ({ sr, index, total, onChange, onRemove }: {
     const { text, error } = await fetchVerses(refSw, "sw");
     setLoadingSw(false);
     if (error) { setErrSw(error); return; }
-    onChange({ textSw: text });
+    // Save both the Swahili reference AND the text
+    onChange({ referenceSw: refSw, textSw: text });
     setOkSw(true); setTimeout(() => setOkSw(false), 2500);
   };
 
@@ -289,6 +294,7 @@ const SubReadingCard = ({ sr, index, total, onChange, onRemove }: {
 
   return (
     <div className="rounded-2xl border border-border overflow-hidden bg-card">
+      {/* Type selector header */}
       <div className="px-4 py-3 bg-muted/30 border-b border-border flex items-center gap-2">
         <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest flex-1">
           {sr.type || `Reading ${index + 1}`}
@@ -311,15 +317,23 @@ const SubReadingCard = ({ sr, index, total, onChange, onRemove }: {
           </button>
         ))}
       </div>
+
       <div className="px-4 py-4 space-y-3">
+
+        {/* ── English reference + fetch ── */}
         <div>
           <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block">
             Scripture Reference (English)
           </label>
           <div className="flex gap-2">
-            <input type="text" placeholder="e.g. Mark 8:1-10" value={refEn}
-              onChange={e => setRefEn(e.target.value)} onKeyDown={e => e.key === "Enter" && lookupEn()}
-              className={inp} />
+            <input
+              type="text"
+              placeholder="e.g. John 3:16"
+              value={refEn}
+              onChange={e => { setRefEn(e.target.value); onChange({ reference: e.target.value }); }}
+              onKeyDown={e => e.key === "Enter" && lookupEn()}
+              className={inp}
+            />
             <button type="button" onClick={lookupEn} disabled={loadingEn || !refEn.trim()}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition disabled:opacity-40 whitespace-nowrap ${
                 okEn ? "bg-green-500 text-white" : "bg-primary text-primary-foreground hover:opacity-90"
@@ -331,6 +345,8 @@ const SubReadingCard = ({ sr, index, total, onChange, onRemove }: {
           </div>
           {errEn && <p className="mt-1 text-[10px] text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errEn}</p>}
         </div>
+
+        {/* English text */}
         {sr.text ? (
           <div>
             <div className="flex items-center justify-between mb-1.5">
@@ -349,46 +365,82 @@ const SubReadingCard = ({ sr, index, total, onChange, onRemove }: {
               onChange={e => onChange({ text: e.target.value })} className={`${inp} resize-none`} />
           </div>
         )}
+
+        {/* ── Swahili toggle ── */}
         <button type="button" onClick={() => setShowSw(!showSw)}
           className="flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:opacity-75 transition">
           <Globe className="h-3.5 w-3.5" />
           {showSw ? "Hide" : "Add"} Kiswahili Translation
           {showSw ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </button>
+
         {showSw && (
           <div className="space-y-3 pt-2 border-t border-border">
+
+            {/* Swahili type */}
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block">Aina (Kiswahili)</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+                Aina (Kiswahili)
+              </label>
               <input type="text" placeholder="e.g. Somo la Kwanza" value={sr.typeSw}
                 onChange={e => onChange({ typeSw: e.target.value })} className={inp} />
             </div>
+
+            {/* Swahili reference + fetch */}
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block">Rejeleo (Kiswahili)</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+                Rejeleo (Kiswahili)
+              </label>
               <div className="flex gap-2">
-                <input type="text" placeholder="e.g. Marko 8:1-10" value={refSw}
-                  onChange={e => setRefSw(e.target.value)} onKeyDown={e => e.key === "Enter" && lookupSw()}
-                  className={inp} />
-                <button type="button" onClick={lookupSw} disabled={loadingSw || !refSw.trim()}
+                <input
+                  type="text"
+                  placeholder="e.g. Yohana 3:16"
+                  value={refSw}
+                  onChange={e => {
+                    setRefSw(e.target.value);
+                    // Save reference immediately as admin types — don't wait for Fetch
+                    onChange({ referenceSw: e.target.value });
+                  }}
+                  onKeyDown={e => e.key === "Enter" && lookupSw()}
+                  className={inp}
+                />
+                <button
+                  type="button"
+                  onClick={lookupSw}
+                  disabled={loadingSw || !refSw.trim()}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition disabled:opacity-40 whitespace-nowrap ${
                     okSw ? "bg-green-500 text-white" : "bg-primary text-primary-foreground hover:opacity-90"
-                  }`}>
+                  }`}
+                >
                   {loadingSw ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> :
                    okSw ? <CheckCircle className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5" />}
-                  {loadingSw ? "…" : okSw ? "Sawa" : "Fetch"}
+                  {loadingSw ? "…" : okSw ? "Sawa!" : "Pata Maandishi"}
                 </button>
               </div>
               {errSw && <p className="mt-1 text-[10px] text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" />{errSw}</p>}
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Andika rejeleo la Kiswahili (e.g. Yohana 3:16) kisha bonyeza <strong>Pata Maandishi</strong>
+              </p>
             </div>
+
+            {/* Swahili text */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1">
                   <Edit3 className="h-3 w-3" /> Maandishi (Kiswahili)
                 </label>
-                {sr.textSw && <button type="button" onClick={() => onChange({ textSw: "" })}
-                  className="text-[10px] text-muted-foreground hover:text-destructive transition">Clear</button>}
+                {sr.textSw && (
+                  <button type="button" onClick={() => onChange({ textSw: "" })}
+                    className="text-[10px] text-muted-foreground hover:text-destructive transition">Clear</button>
+                )}
               </div>
-              <textarea rows={6} placeholder="Andika maandishi hapa au bonyeza Fetch…" value={sr.textSw}
-                onChange={e => onChange({ textSw: e.target.value })} className={`${inp} resize-y`} />
+              <textarea
+                rows={6}
+                placeholder="Itajazwa ukibonyeza 'Pata Maandishi', au weka maandishi hapa mwenyewe…"
+                value={sr.textSw}
+                onChange={e => onChange({ textSw: e.target.value })}
+                className={`${inp} resize-y`}
+              />
             </div>
           </div>
         )}
@@ -794,7 +846,8 @@ const Admin = () => {
                         <div>
                           <p className="text-xs font-bold text-primary">Bible Auto-fill</p>
                           <p className="text-[11px] text-muted-foreground mt-0.5">
-                            Type a reference like <code className="font-mono bg-muted px-1 rounded text-[10px]">Mark 8:1-10</code> and click Fetch. Edit the result as needed.
+                            English: type <code className="font-mono bg-muted px-1 rounded text-[10px]">John 3:16</code> → Fetch.
+                            Kiswahili: type <code className="font-mono bg-muted px-1 rounded text-[10px]">Yohana 3:16</code> → Pata Maandishi.
                           </p>
                         </div>
                       </div>

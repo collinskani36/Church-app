@@ -11,13 +11,14 @@ interface SubReading {
   type: string;
   typeSw: string;
   reference: string;
+  referenceSw?: string;
   text: string;
   textSw: string;
 }
 
 interface DailyReading {
   id: string;
-  date: string;        // "YYYY-MM-DD"
+  date: string;
   season: string;
   seasonSw: string;
   seasonColor: string;
@@ -54,10 +55,8 @@ const friendlyDate = (dateStr: string): string => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = tomorrow.toISOString().split("T")[0];
-
   if (dateStr === today)       return "Today";
   if (dateStr === tomorrowStr) return "Tomorrow";
-
   const d = new Date(dateStr + "T00:00:00");
   return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
 };
@@ -109,7 +108,7 @@ const Readings = () => {
     setExpandedReading(null);
   };
 
-  // ── Loading state ───────────────────────────────────────────────────────────
+  // ── Loading ─────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -130,7 +129,7 @@ const Readings = () => {
     );
   }
 
-  // ── Empty state ─────────────────────────────────────────────────────────────
+  // ── Empty ───────────────────────────────────────────────────────────────────
 
   if (allReadings.length === 0) {
     return (
@@ -141,8 +140,6 @@ const Readings = () => {
             {t("Sunday Mass Reading", "Masomo ya Misa ya Leo")}
           </h2>
         </div>
-
-        {/* Bible shortcut even when no readings posted */}
         <button
           onClick={() => navigate("/bible")}
           className="w-full flex items-center gap-3 rounded-xl bg-card border border-border p-4 mb-5 hover:border-accent hover:shadow-liturgical transition"
@@ -154,7 +151,6 @@ const Readings = () => {
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </button>
-
         <div className="text-center py-8">
           <BookOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-sm font-medium text-foreground mb-1">
@@ -168,7 +164,7 @@ const Readings = () => {
     );
   }
 
-  // ── Main render ─────────────────────────────────────────────────────────────
+  // ── Main ────────────────────────────────────────────────────────────────────
 
   return (
     <div className="animate-fade-in px-4 py-4">
@@ -181,8 +177,6 @@ const Readings = () => {
             {t("Sunday Mass Reading", "Masomo ya Misa ya Leo")}
           </h2>
         </div>
-
-        {/* Bible shortcut button */}
         <button
           onClick={() => navigate("/bible")}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border hover:border-accent transition text-xs font-medium text-muted-foreground hover:text-foreground"
@@ -192,7 +186,7 @@ const Readings = () => {
         </button>
       </div>
 
-      {/* ── Upcoming days strip ─────────────────────────────────────────────── */}
+      {/* ── Upcoming strip ──────────────────────────────────────────────────── */}
       {upcoming.length > 0 && (
         <div className="mb-1">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
@@ -223,7 +217,7 @@ const Readings = () => {
                   <p className={`text-[10px] mt-0.5 truncate max-w-[110px] ${
                     isSelected ? "text-primary-foreground/80" : "text-muted-foreground"
                   }`}>
-                    {day.title}
+                    {t(day.title, day.titleSw)}
                   </p>
                 </button>
               );
@@ -232,16 +226,14 @@ const Readings = () => {
         </div>
       )}
 
-      {/* ── Past readings (collapsible) ─────────────────────────────────────── */}
+      {/* ── Past readings ───────────────────────────────────────────────────── */}
       {past.length > 0 && (
         <div className="mb-3">
           <button
             onClick={() => setShowPast(!showPast)}
             className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-foreground transition"
           >
-            {showPast
-              ? <ChevronUp className="h-3 w-3" />
-              : <ChevronDown className="h-3 w-3" />}
+            {showPast ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
             {t(`${past.length} past reading${past.length > 1 ? "s" : ""}`,
                `Masomo ${past.length} ya nyuma`)}
           </button>
@@ -263,7 +255,7 @@ const Readings = () => {
                     <p className={`text-[10px] mt-0.5 truncate max-w-[110px] ${
                       isSelected ? "text-primary-foreground/80" : "text-muted-foreground"
                     }`}>
-                      {day.title}
+                      {t(day.title, day.titleSw)}
                     </p>
                   </button>
                 );
@@ -273,7 +265,7 @@ const Readings = () => {
         </div>
       )}
 
-      {/* ── Selected day detail ─────────────────────────────────────────────── */}
+      {/* ── Selected day ────────────────────────────────────────────────────── */}
       {selectedDay && (
         <>
           {/* Season badge */}
@@ -301,6 +293,13 @@ const Readings = () => {
               selectedDay.readings.map((reading, index) => {
                 const key    = `${selectedDay.id}-${index}`;
                 const isOpen = expandedReading === key;
+
+                // ✅ Show referenceSw when Swahili is active, fall back to English
+                const displayReference = t(
+                  reading.reference,
+                  reading.referenceSw?.trim() ? reading.referenceSw : reading.reference
+                );
+
                 return (
                   <div key={key} className="rounded-xl bg-card border border-border overflow-hidden">
                     <button
@@ -313,8 +312,9 @@ const Readings = () => {
                         }`}>
                           {t(reading.type, reading.typeSw)}
                         </p>
+                        {/* ✅ This now shows "Yohana 3:16" in Swahili, "John 3:16" in English */}
                         <p className="text-sm font-semibold text-foreground mt-0.5 truncate">
-                          {reading.reference}
+                          {displayReference}
                         </p>
                       </div>
                       {isOpen
